@@ -1,25 +1,19 @@
 <?php
 
-
-const HOST = "localhost";
-const USER = "root";
-const PASSWORD = "bcd127";
-const DATABASE = "tasklist";
-
-
-$conexao = mysqli_connect(HOST, USER, PASSWORD, DATABASE);
-
-if (isset($_POST["tarefa"])) {
-    $tarefa = $_POST["tarefa"];
-        $sqlTarefa = "INSERT INTO tbl_task (descricao) VALUES ('$tarefa')";
-        mysqli_query($conexao, $sqlTarefa);
-}
+/**
+ * CRUD
+ * 
+ * C = CREATE (INSERÇÃO)
+ * R = READ (LEITURA/LISTAGEM)
+ * U = UPDATE (ATUALIZAÇÃO)
+ * D = DEETE (EXECLUSÃO/DELEÇÃO)
+ * 
+ */
+require("./database/conexao.php");
 
 $sql = "SELECT * FROM tbl_task";
 
 $resultado = mysqli_query($conexao, $sql);
-
-
 
 ?>
 
@@ -36,22 +30,46 @@ $resultado = mysqli_query($conexao, $sql);
 <body>
 
     <div class="content">
+            <?php 
+            if(isset($_GET["mensagem"])){
+            ?>  
+                <div class="mensagem"
+                    <?= $_GET["tipoMensagem"] == "sucesso" ? "style='background-color: #006600DD;'" : "" ?>
+                >
+                    <?=$_GET["mensagem"]?>
+                </div>
+            <?php
+            }
+            ?>
+        
         <h1>Lista de Tarefas</h1>
-        <form method="POST">
+
+        <form method="POST" action="taskActions.php">
             <div class="input-group">
+                <input type="hidden" name="acao" value="inserir"/>
                 <label for="tarefa">Descrição da tarefa</label>
                 <input type="text" name="tarefa" id="tarefa" placeholder="Digite a tarefa" required/>
             </div>
             <button>Adicionar</button>
         </form>
-        <hr />
+
+        <hr/>
+
         <div class="tarefas">
             <?php
                 while ($tarefa = mysqli_fetch_array($resultado)) {
             ?>
                 <div class="tarefa">
                     <?=$tarefa["descricao"]?>
-                    <span>&#128465;</span>
+                    <form id="form-editar" method="GET" action="editarTarefa.php">
+                        <input type="hidden" name="tarefaId" value="<?= $tarefa["id"]?>" >    
+                        <button>&#128393;</button>
+                    </form>
+                    <form method="POST" action="taskActions.php">
+                        <input type="hidden" name="acao" value="deletar" >    
+                        <input type="hidden" name="tarefaId" value="<?= $tarefa["id"]?>" >    
+                        <button>&#128465;</button>
+                    </form>
                 </div>
             <?php
                 }
@@ -59,6 +77,11 @@ $resultado = mysqli_query($conexao, $sql);
         </div>
     </div>
 
+    <script type="text/javascript">
+        setTimeout(()=>{
+            document.querySelector(".mensagem").style.display = "none";
+        },4000)
+    </script>
 </body>
 
 </html>
